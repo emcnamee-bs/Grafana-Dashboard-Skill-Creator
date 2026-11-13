@@ -19,18 +19,20 @@ Optional. Runs in its own hidden PowerShell with the project as working director
 |---|---|
 | `status`, `status_label` | `ok`/`warn`/`fail`/`idle`/`building`, optional pill text |
 | `task` | current objective text |
+| `summary` | one or two sentences on what the tile is (full-screen square view) |
 | `tests` | `{passed, failed, skipped?}` |
-| `health` | list of `{name, state}`; replaces the tile's list |
-| `stats` | list of `{label, value, trend?}`; replaces the tile's list |
-| `charts` | the full list of points charts (see `tile-spec.md`): each with `title`, `subtitle`, `points`, `span_label`, `kpis`. Replaces the tile's list, so history is always current. |
+| `health` | list of `{name, state}`; replaces the tile's list. Items may carry `explain` and `detail` (see `tile-spec.md`, "Interactive detail") |
+| `stats` | list of `{label, value, trend?}`; replaces the tile's list. Items may carry `explain` and `detail` (e.g. the members behind a `Containers 5` chip) |
+| `charts` | the full list of points charts (see `tile-spec.md`): each with `title`, `subtitle`, `points`, `span_label`, `kpis`, and optionally `explain`, `history`/`history_label`, `breakdown`. Replaces the tile's list, so history is always current. |
 | `series` | `{name: number}` current values for legacy live series charts |
-| `activity` | `{state}` only: lets the hook say `stalled` (should be running but is not). Label stays automatic. |
+| `activity` | `{state, label?}`: lets the hook say `stalled` (should be running but is not). The label stays automatic (coarse git/session recency) unless the hook gives one - for a project that is not a git repo (a host), e.g. `up 1d 4h`. Keep it coarse; it is part of the redraw hash. |
 
 If the hook fails, times out or prints invalid JSON, refresh logs it (`~/.grafana-wall/refresh.log`) and keeps the last known facts for that project, so a broken hook never blanks a tile.
 
 ### Rules for hooks
 - **Read-only and cheap**: they run every 2 minutes forever. HTTP GETs to health endpoints, `aws ... describe-*`, reading a results file or running a quick read-only database query are fine. Nothing that trades, writes, spends money, or approaches an API rate limit.
 - **Chart points must come from clean, aligned buckets** (e.g. `end = floor(now/900)*900`, step 900) so the points only change when the data does; otherwise every refresh looks like a change and the tile is redrawn every 2 minutes. Redraws are seamless (the wrapper loads the new frame behind the old one), but needless ones are still wasted work. Do not put a ticking timestamp in any text field.
+- **Detail follows the same alignment rule as chart points.** `history`, `breakdown` and `detail` are part of the redraw hash, so build them from aligned buckets (e.g. 3 h or 1 h boundaries), round totals coarsely (an exact 7-day run count changes every few minutes), and put no ticking timestamps or per-run counters in `why` or `worst` labels. Cache expensive long-range queries (10 min) like the 12 h chart.
 - **Definitions beat guesses**: derive "error" and "run" from the project's own dashboards/alert rules, and when a metric you want does not exist (e.g. a consecutive-successes counter), compute it from counters over a range query (successes since the last bucket that contained a failure; show `N+` when no failure appears inside the lookback).
 - **No secrets in output**; it ends up on a TV.
 - **Fail loudly, never publish guesses.** `$ErrorActionPreference = 'Stop'` does not stop on a native command's exit code: check `$LASTEXITCODE` after every `gh`/`aws`/`curl`, and `throw` (or `exit 1`) when a call fails or returns nothing. A hook that swallows an error and prints empty-looking JSON replaces real facts on the wall with false ones (e.g. "0 open PRs"); a non-zero exit makes refresh keep the last known facts.

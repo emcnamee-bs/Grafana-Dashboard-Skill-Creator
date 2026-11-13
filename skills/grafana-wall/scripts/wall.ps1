@@ -29,7 +29,10 @@ if ($Command -eq 'register') {
   $tilePath = Join-Path $Dir '.grafana-wall\tile.json'
   if (-not (Test-Path $tilePath)) { throw "No $tilePath - publish a tile first (see the skill)." }
   $slug = (Get-Content $tilePath -Raw | ConvertFrom-Json).project
-  Save-Reg @((Get-Reg | Where-Object { $_.project -ne $slug }) + [pscustomobject]@{ project = $slug; dir = $Dir })
+  $entry = [pscustomobject]@{ project = $slug; dir = $Dir }
+  $prev = @(Get-Reg | Where-Object { $_.project -eq $slug }) | Select-Object -First 1
+  if ($prev -and $prev.PSObject.Properties['fastSec'] -and $prev.fastSec) { $entry | Add-Member -NotePropertyName fastSec -NotePropertyValue $prev.fastSec }   # keep a fast-lane setting across re-register
+  Save-Reg (@(Get-Reg | Where-Object { $_.project -ne $slug }) + $entry)
   "registered $slug ($Dir) for auto-refresh"; return
 }
 if ($Command -eq 'refresh') { & (Join-Path $PSScriptRoot 'wall-refresh.ps1'); return }

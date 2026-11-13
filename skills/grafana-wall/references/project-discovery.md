@@ -36,6 +36,9 @@ Find where the code already computes or logs it (a ledger table, a metrics funct
 - `ok`: running as intended; dependencies up; tests green. `warn`: a dependency degraded, tests failing, or recent errors. `fail`: required dependency down or the project is crashed. `idle`: nothing meant to be running right now. `building`: uncommitted changes, a deploy in flight, or a feature branch with commits in the last ~15 min (a clean tree on a stable branch with nothing running is `idle`, not `building`).
 - Activity `active`: something happened in the last ~15 min (commit, run, trade, request). `stalled`: it should be running continuously but nothing has happened for a long time.
 
+## Also note what could explain each part (for the full-screen views)
+While discovering, jot down where an explanation could come from, so the tile can answer "what is this and what is wrong?" on click: what each health light checks (and what a failure of it means), the members behind any count chip (containers, services, workers, queues: name, current health, what each does), the project's own alert rules or dashboard panel descriptions (they define "error" and "bad"), and where longer history exists (a 7-day range query, a ledger table). Record only what you can back with the project or live data; anything unknown stays out and that item opens a minimal view.
+
 ## When to ask the user
 - Which number is "the" headline metric, when several are plausible.
 - Permission for anything with side effects, cost, or new credentials.
