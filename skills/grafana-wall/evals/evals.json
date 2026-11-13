@@ -40,6 +40,14 @@
                       "files":  [
 
                                 ]
+                  },
+                  {
+                      "id":  6,
+                      "prompt":  "when i hover and click the 5 containers chip on the mini-mac tile it just shows a number. make every chip, light and chart explain itself when clicked",
+                      "expected_output":  "Adds a concise explain to every stat, health light, chart and KPI plus a tile summary in tile.json, and extends the hook to return history, breakdown and detail (the five containers with health and purpose, a why for any degraded light) from real data on clean aligned buckets; validates with snapshot -Dry; no secrets, no invented causes.",
+                      "files":  [
+
+                                ]
                   }
               ]
 }

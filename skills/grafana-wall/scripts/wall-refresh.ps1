@@ -8,7 +8,11 @@
     3. run the project's optional .grafana-wall/refresh.ps1 hook and merge the JSON it prints (status, task, tests, health, stats, series, activity)
     4. redraw the tile ONLY if something visible changed (every redraw reloads that monitor), otherwise just push the live series.
   Log: ~/.grafana-wall/refresh.log
+
+  Fast lane: a project entry in projects.json with "fastSec": N is skipped by the normal 2-minute run and instead refreshed by
+  wall-refresh-fast.ps1 (task GrafanaWallRefreshFast), which runs this script with -Fast every N seconds for those projects only.
 #>
+param([switch]$Fast)
 $ErrorActionPreference = 'Stop'
 $wall = Join-Path $PSScriptRoot 'wall.ps1'
 $home2 = Join-Path $HOME '.grafana-wall'; $stateDir = Join-Path $home2 'state'
@@ -20,7 +24,7 @@ function Log($m) {
 }
 
 $created = $false
-$mutex = New-Object System.Threading.Mutex($true, 'Global\GrafanaWallRefresh', [ref]$created)
+$mutex = New-Object System.Threading.Mutex($true, $(if ($Fast) { 'Global\GrafanaWallRefreshFast' } else { 'Global\GrafanaWallRefresh' }), [ref]$created)
 if (-not $created) { return }
 
 function Set-Prop($o, $n, $v) { if ($o.PSObject.Properties[$n]) { $o.$n = $v } else { $o | Add-Member -NotePropertyName $n -NotePropertyValue $v } }
@@ -62,6 +66,7 @@ function Get-ActivityLabel($min) {
 
 $reg = @(); $regFile = Join-Path $home2 'projects.json'
 if (Test-Path $regFile) { $reg = @((Get-Content $regFile -Raw | ConvertFrom-Json).projects) | Where-Object { $_ } }
+$reg = @($reg | Where-Object { $isFast = [bool]($_.PSObject.Properties['fastSec'] -and $_.fastSec); if ($Fast) { $isFast } else { -not $isFast } })
 if (-not $reg) { return }
 
 try { $occupied = @(& $wall slots | ForEach-Object { if ($_ -match '^\s*\d+\s+occupied\s+(\S+)') { $Matches[1] } }) }
@@ -93,8 +98,9 @@ foreach ($p in $reg) {
       else {
         try {
           $patch = Get-Content $outFile -Raw | ConvertFrom-Json
-          foreach ($k in 'status', 'status_label', 'task', 'tests', 'health', 'stats', 'charts') { if ($patch.PSObject.Properties[$k]) { Set-Prop $tile $k $patch.$k } }
+          foreach ($k in 'status', 'status_label', 'task', 'alert', 'summary', 'tests', 'health', 'stats', 'charts', 'showcase') { if ($patch.PSObject.Properties[$k]) { Set-Prop $tile $k $patch.$k } }
           if ($patch.activity -and $patch.activity.state) { $act.state = $patch.activity.state }   # e.g. 'stalled'
+          if ($patch.activity -and $patch.activity.label) { $act.label = [string]$patch.activity.label }   # non-git projects (a host) own their label
           if ($patch.series) { $series = $patch.series }
         } catch { Log "[$slug] hook output is not valid JSON ($($_.Exception.Message)); tile left as is"; continue }
       }
