@@ -718,7 +718,7 @@ def wrap_rows(widths, avail, gap=6, safety=1.04):
 
 def tile_v2_html(sp):
     """Fixed template: a top bar (name, status, git branch, activity, quick stats, key-part health, current task) over a landscape row of
-    2-3 equal charts, each with its own KPI chips. Every item has its own border. All sizing is explicit because Grafana's sanitizer
+    2-4 equal charts, each with its own KPI chips. Every item has its own border. All sizing is explicit because Grafana's sanitizer
     drops flex:1 / zoom / overflow-style tricks. Every box is also a hover/click target of the full-screen viewer (see tgt)."""
     c = CONFIG
     charts = sp["charts"]; n = len(charts)

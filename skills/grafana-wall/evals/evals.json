@@ -4,7 +4,7 @@
                   {
                       "id":  1,
                       "prompt":  "put this project on the grafana wall. it\u0027s my kalshi trading bot - make sure the square dedicates a big chunk of space to an all-time earnings line chart, and show the status of the kalshi api and the ec2 box it runs on",
-                      "expected_output":  "Tile built from the fixed template: top bar (name, status pill, git chip, activity, stat chips, health lights, task) over 2-3 equal landscape charts with KPI chips; the user\u0027s named charts only, backed by queryable data; no invented numbers.",
+                      "expected_output":  "Tile built from the fixed template: top bar (name, status pill, git chip, activity, stat chips, health lights, task) over 2-4 equal landscape charts with KPI chips; the user\u0027s named charts only, backed by queryable data; no invented numbers.",
                       "files":  [
 
                                 ]
@@ -28,7 +28,7 @@
                   {
                       "id":  4,
                       "prompt":  "put this project on the wall",
-                      "expected_output":  "Because no charts were named, the skill spawns a graph-candidate agent (references/chart-candidates.md), then asks a multiple-choice AskUserQuestion (multiSelect, pick up to 3) before building; if nothing chart-worthy exists it publishes the top bar only. It never silently picks charts and never draws an empty chart box.",
+                      "expected_output":  "Because no charts were named, the skill spawns a graph-candidate agent (references/chart-candidates.md), then asks a multiple-choice AskUserQuestion (multiSelect, pick up to 4) before building; if nothing chart-worthy exists it publishes the top bar only. It never silently picks charts and never draws an empty chart box.",
                       "files":  [
 
                                 ]

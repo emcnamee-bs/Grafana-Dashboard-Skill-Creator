@@ -17,7 +17,7 @@ JSON sent to `POST /snapshot` (via `wall.ps1 snapshot -File tile.json`, or produ
 | `task` | text ≤90 (52 shown) | What is in flight. |
 | `alert` | `{label?, text, state?, items?}` | Optional second banner in the same box right under the `task` line (e.g. the canary alerts). `label` <=10 (default `ALERT`), `text` <=90 (52 shown; the most urgent alert, in plain English), `state` `ok` `warn` `bad` (colours the label: quiet / being looked at / needs a human), `items` up to 12 x `{text <=90, state}` listed when the banner is clicked (full-screen view). Needs the hook output key `alert` (wall-refresh passes it through). Example: `{"label":"CHECKING","text":"Update canary is offline","state":"warn","items":[...]}` |
 | `summary` | text ≤240 | One or two sentences on what the tile is; shown in the full-screen square view and as the top bar's hover tip. |
-| `charts` | up to 4 (use 2-3) | See below. |
+| `charts` | up to 4 (use 2-4) | See below. |
 | `tests`, `layout`, `series` | legacy | Only used by the legacy series-chart layout (below). |
 | `slot` | 1-18 | Optional: claim this specific vacant slot instead of the next one (a project that already owns a slot keeps it; an occupied slot is a conflict). |
 | `showcase` | `{interval?, items[]}` | Optional rotating tile instead of the status template: one item at a time, animated, looping forever. `interval` 3-60 s (default 10); 1-100 `items` of `{group? ≤20, title ≤34, text ≤140}`. `name`/`status`/`status_label` still fill the top bar; charts/stats/health are ignored. Example: `examples/claude-skills/` (the Claude Skills square). |
@@ -33,7 +33,7 @@ JSON sent to `POST /snapshot` (via `wall.ps1 snapshot -File tile.json`, or produ
 - `kind`: `line` (default) or `bar`. `title` ≤22, `subtitle` ≤26, `span_label` ≤8 (shows as `-12h` at the left of the footer; the footer also shows the max and `now`).
 - `y_max` (optional number): fixes the top of the y-axis; the left axis shows `y_max`, half of it, and `0`, with gridlines at the top and middle. Use it when the viewer should read a fixed scale (e.g. `10` errors per bucket). If a point exceeds it the axis grows to the next clean value so nothing is clipped. Without it the axis auto-fits to a clean value (1, 2, 5, 10, 20, 50, ...).
 - `kpis`: up to 2 chips per chart: `label` ≤12, `value` ≤10, optional `state` `ok`/`warn`/`bad` (colours the value).
-- 2-3 charts are laid side by side in one landscape row at equal width; do not mix points charts and series charts in one tile.
+- 2-4 charts are laid side by side in one landscape row at equal width (with 4, KPI labels shrink to fit and titles should stay about 10 characters); do not mix points charts and series charts in one tile.
 
 The tile is one card: top bar (name, status, git chip, activity, stat chips, health lights, task) over the chart row. Every item has its own border. With no charts the top bar fills the square.
 
